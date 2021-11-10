@@ -1,72 +1,100 @@
-import React from 'react';
-import axios from 'axios';
-import { Button, Card, Container, Icon, Label } from 'semantic-ui-react';
-import Product from '../components/product';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useContext } from 'react';
 
+import { Button, Card, Container, Grid, Icon, Label, Menu, Segment, Sidebar, Image } from 'semantic-ui-react';
+import { CartItemIdContext, ProductItemContext } from '../components/App';
 
-class ProductPage extends React.Component{
-    constructor(props){
-        super(props);
+import ProductList from '../components/productList';
 
-        this.state = {
-            product: [],
-            cartItem: []
-        }
-    }
+const CartItemSide = (props) => {
+     console.log(props);
 
-    componentDidMount(){
-        axios.get("https://fakestoreapi.com/products/category/men's%20clothing")
-            .then(data => {
-                console.log(data.data);
-                const proData = data.data;
+    return (<Card>
+    <Card.Content>
+      <Image
+        floated='right'
+        size='mini'
+        src = {props.product.image}
+      />
+      <Card.Header>{props.product.title}</Card.Header>
+      <Card.Meta>{props.product.price}</Card.Meta>
+    </Card.Content>
+  </Card>);
+}
 
-                this.setState({
-                product: proData
-                });
-            });
-    }
+const ProductPage = () => {
+    const [visible, setVisible] = React.useState(false);
+    const [cartProducts, setCartProduct] = React.useState([]);
+    const cartItemIdContext = useContext(CartItemIdContext);
+    const productItemContext = useContext(ProductItemContext);
+    const [cart, setCart] = React.useState(cartItemIdContext.CartItemIdState);
+    
 
-    addtoCart = (id) => {
-        console.log(id, "product ID from addtoCart");
-        let items = this.state.cartItem;
-        items.push(id);
-        this.setState({cartItem: items});
-        console.log(this.state.cartItem);
+    const abch = (value) => {
+        console.log(value);
+        const newCartProducts = [];
+        console.log(cart, "cart");
+        value.CartItemIdState.forEach(id => {
+            
+            // console.log(id, " id", productItemContext.ProductState[id-1], "product Details as id");
+            newCartProducts.push( productItemContext.ProductState[id-1]);
+            console.log(cartProducts, "from Cart Products");
+        });
+        return newCartProducts;
+        //console.log(cartProducts, "useEffect product");
+    };
 
-        //saving to localdisk
-        localStorage.setItem("cart", JSON.stringify(items));
-    }
-
-    productComponentList(){
-        return this.state.product.map(data => {
-            return <Product key={data.id} product={data} addtoCart={this.addtoCart}/>
+    const cartItemList = (value) =>{
+        
+        return abch(value).map(data => {
+            //console.log(data, "data");
+            if(data === undefined) return;
+            console.log(data.id, "data");
+            return <CartItemSide key={data.id} product={data} />
         })
     }
 
-    render(){
+    //setTimeout(()=> setCart([1,2,3]), 10000);
         return(
+            
             <div>
                 <Container >
-                    <Link to="/cart">
-                        <Button color="orange">
-                        <Icon name="cart" /> Cart &emsp;
-                        <Label color="teal">{this.state.cartItem.length}</Label>
-                        </Button>  
-                    </Link>
+                    <Grid columns={1}>
+                        <Grid.Column>
+                                <Button color="orange" onClick={() => setVisible(prevVisiblity => prevVisiblity? false: true)}>
+                                <Icon name="cart" /> Cart &emsp;
+                                {/* <Label color="teal">{this.state.cartItem.length}</Label> */}
+                                </Button>  
+                        </Grid.Column>
 
-                <br/>
-                <br/>
-                <Card.Group itemsPerRow="4">
-                {/* <Product product={this.state.product}/> */}
-                {/* <Product key={this.state.product[0]} product={this.state.product}/> */}
-                {this.productComponentList()}
-                </ Card.Group>
+                        <Grid.Column>
+                            <Sidebar.Pushable as={Segment}>
+                                <Sidebar
+                                    as={Card}
+                                    animation='overlay'
+                                    icon='labeled'
+                                    inverted="true"
+                                    onHide={() => setVisible(false)}
+                                    vertical="true"
+                                    visible={visible}
+                                    width='thin'
+                                >
+                                    <CartItemIdContext.Consumer>
+                                        {(value) => cartItemList(value)}
+                                    </CartItemIdContext.Consumer>
+                                </Sidebar> 
+                                <Sidebar.Pusher>
+                                    <Segment basic>
+                                        <ProductList/>
+                                    </Segment>
+                                </Sidebar.Pusher> 
+                            </Sidebar.Pushable>
+                        </Grid.Column>
+                    </Grid>
+
                 </Container>
-                
             </div>
         );
     }
-}
+
 
 export default ProductPage;

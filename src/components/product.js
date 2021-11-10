@@ -1,12 +1,14 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Card, Icon, Image, Button } from 'semantic-ui-react'
+import { CartItemIdContext } from './App';
 
-const Product = (props) => (
-    // <>
-    // {console.log(props, "HElow")}
-    // {console.log(props.product.category), "title"}
-    // </>
-  <Card>
+
+function Product (props) {
+  const cartItemIdContext = useContext(CartItemIdContext);
+  console.log(cartItemIdContext.CartItemIdState);
+
+  return (
+    <Card>
     <Image src={props.product.image} wrapped ui={false} />
     <Card.Content>
       <Card.Header>{props.product.title}</Card.Header>
@@ -21,12 +23,22 @@ const Product = (props) => (
         {props.product.price}
       </a>
       &emsp;
-      <Button onClick={() => props.addtoCart(props.product.id)}>
+      <Button onClick={() => {
+        console.log(cartItemIdContext.CartItemIdState);
+        cartItemIdContext.CartItemIdDispatch({type: 'ADD_ITEM_ID', id: `${props.product.id}`})}
+        }>
           <Icon name='cart' />
           Add to Cart
       </Button>
     </Card.Content>
   </Card>
-)
+  );
+}
 
-export default Product;
+    // <>
+    // {console.log(props, "HElow")}
+    // {console.log(props.product.category), "title"}
+    // </>
+ 
+
+export default React.memo(Product);
